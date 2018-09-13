@@ -3,10 +3,24 @@ $.getJSON("/articles", function(data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
     // Display the apropos information on the page
-    $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
+    $(".article-container").append(
+      `<div data-id='${data[i]._id}' class='card'>
+        <div class='card-header'>
+          <h3>
+            <a class='article-link' target='_blank' rel='noopener noreferrer' href='${data[i].link}>${data[i].title}</a>
+            <a class='btn btn-success save'>Save Article</a>
+          </h3>
+        </div>
+        <div class='card-body'>${data[i].synopsis}
+        </div>
+      </div>`);
   }
 });
 
+// Whenever someone clicks "SCRAPE NEW ARTICLES!"
+// $(document).on("click", ".scrape-new", function(){
+  
+// })
 
 // Whenever someone clicks a p tag
 $(document).on("click", "p", function() {
