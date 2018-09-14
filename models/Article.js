@@ -16,12 +16,16 @@ var ArticleSchema = new Schema({
   link: {
     type: String,
     required: true,
-    unique: true
+    // unique: true
   },
   synopsis: {
     type: String,
     required: true,
-    unique: true
+    // unique: true
+  },
+  saved: {
+    type: Boolean,
+    default: false
   },
   // `note` is an object that stores a Note id
   // The ref property links the ObjectId to the Note model
@@ -31,6 +35,14 @@ var ArticleSchema = new Schema({
     ref: "Note"
   }
 });
+
+
+ArticleSchema.methods.isSaved = function() {
+  // Make the "isCool" property of the current user equal to the boolean "true"
+  this.saved = true;
+  // Return the new boolean value
+  return this.saved;
+};
 
 // This creates our model from the above schema, using mongoose's model method
 var Article = mongoose.model("Article", ArticleSchema);

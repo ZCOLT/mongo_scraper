@@ -37,10 +37,12 @@ app.set("view engine", "handlebars");
 mongoose.connect("mongodb://localhost/nytimes_db", { useNewUrlParser: true });
 mongoose.set('useCreateIndex', true);
 
+
+
 // Routes
 
 // A GET route for scraping the echoJS website
-app.get("/scrape", function(req, res) {
+app.get("/api/scrape", function(req, res) {
   // First, we grab the body of the html with request
   axios.get("http://www.nytimes.com/").then(function(response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
@@ -58,35 +60,61 @@ app.get("/scrape", function(req, res) {
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
         .then(function(dbArticle) {
+          
+          // return db.Article.updateOne({ title: dbArticle.title }, { $set: { title: dbArticle.title } }, { upsert: true });
           // View the added result in the console
-          console.log(dbArticle);
+          // res.json(dbArticle);
         })
         .catch(function(err) {
           // If an error occurred, send it to the client
-          return res.json(err);
+          console.log(err);
         });
     });
 
     // If we were able to successfully scrape and save an Article, send a message to the client
-    console.log("Scrape Completed")
     // res.send("Scrape Complete");
+    res.send("Scrape Complete");
   });
 });
 
-app.delete("/deleteAll", function(req, res) {
+
+app.get("/api/clear", function(req, res) {
   mongoose.connection.db.dropDatabase(function(err, result) {
     if (err) {
-      console.log(err);
+      res.json(err);
     } else {
-      console.log(result)
+      res.json(result)
     }
   })
 })
 
 // Route for getting all Articles from the db
-app.get("/articles", function(req, res) {
+app.get("/api/articles", function(req, res) {
   // Grab every document in the Articles collection
   db.Article.find({})
+    .then(function(dbArticle) {
+      // If we were able to successfully find Articles, send them back to the client
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+app.get("/api/saved", function(req, res) {
+  db.Article.find({ saved: true })
+    .then(function(dbArticle) {
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      res.json(err);
+    })
+})
+
+app.get("/api/articles?saved=false", function(req, res) {
+  // Grab every document in the Articles collection
+  db.Article.find({ saved: false })
     .then(function(dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
@@ -132,7 +160,7 @@ app.get("/articles", function(req, res) {
 //       res.json(err);
 //     });
 // });
-
+require("./routes/htmlRoutes")(app)
 // Start the server
 app.listen(PORT, function() {
   console.log("App running on port " + PORT + "!");
